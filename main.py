@@ -1,10 +1,11 @@
 from tkinter import filedialog, messagebox
 import customtkinter
-from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, CTkToplevel, BooleanVar, IntVar,
-                           CTkCheckBox)
 import os
 import sys
 from crypto import encrypt_str, decrypt_bytes
+from main_window import MainWindow
+from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, CTkToplevel, BooleanVar, IntVar,
+                           CTkCheckBox)
 
 
 ROOT_BG = 'black'
@@ -17,8 +18,7 @@ FONT_NORMAL = ('Arial', 12)
 FONT_BIG = ('Arial', 18)
 
 
-class WelcomeWindow:
-    pass
+
 
 
 
@@ -30,10 +30,10 @@ class WelcomeWindow:
 if __name__ == '__main__':
     root = CTk()
     root.title('Get Passwords')
-    root.configure(bg=ROOT_BG)
+    root.configure(fg_color=ROOT_BG)
 
-
-
+    main_window = MainWindow(master=root)
+    main_window.draw()
 
     root.mainloop()
 
