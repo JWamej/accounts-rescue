@@ -52,9 +52,7 @@ class DisplayWindow:
 
             sample = data_list_encrypted[0]
 
-
-            print(decrypt_bytes(sample, self.key, self.iv))
-            print('Validated')
+            decrypt_bytes(sample, self.key, self.iv)
         except ValueError as e:
             messagebox.showerror('Error', f'Error code: DW-KEYLEN\n{e}')
         except CipherError as e:
@@ -97,7 +95,7 @@ class DisplayWindow:
             self.inputs_textbox.delete(0.0, END)
             self.inputs_textbox.configure(state='disabled')
             self.write_data_on_textbox()
-        self.root.after(1000, self.update_text)
+        self.root.after(250, self.update_text)
 
     def email_add(self):
         email_window = AddEmail(master=self.root, key=self.key, iv=self.iv, file_path=self.src_file)

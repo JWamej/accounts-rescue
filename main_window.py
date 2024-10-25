@@ -37,7 +37,12 @@ class MainWindow:
                                  border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH)
         self.file_entry = CTkEntry(master=self.root, width=300, font=FONT_NORMAL, placeholder_text='Source File',
                                    fg_color=WIDGET_FG, text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
-                                   border_width=WIDGET_BORDERWIDTH, state='disabled')
+                                   border_width=WIDGET_BORDERWIDTH, state='normal')
+
+        # I need to initially set state='normal', because with state being 'disabled' from the beginning wouldn't allow
+        # the placeholder text to appear
+        self.file_entry.configure(state='disabled')
+        self.file_entry.bind('<Button-1>', self.browse_files)
         self.browse_files_button = CTkButton(master=self.root, width=100, font=FONT_NORMAL,
                                              text='Select the File', fg_color=WIDGET_FG,
                                              text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
@@ -53,18 +58,37 @@ class MainWindow:
                                           fg_color=BUTTON_FG, border_color=WIDGET_BORDER_COLOR,
                                           border_width=WIDGET_BORDERWIDTH, command=self.first_use)
 
-    def browse_files(self):
+    def browse_files(self, *args):
         file = filedialog.askopenfilename(title='Select the Source File')
         self.file_entry.configure(state='normal')
         self.file_entry.insert(0, file)
         self.file_entry.configure(state='disabled')
 
     def confirm(self):
+        key = self.key_entry.get()
+        iv = self.iv_entry.get()
+        file = self.file_entry.get()
+
+        if key == '':
+            messagebox.showerror('Error', 'Invalid Key')
+            return
+        if iv == '':
+            messagebox.showerror('Error', 'Invalid IV')
+            return
+        if file == '':
+            messagebox.showerror('Error', 'Invalid File Path')
+            return
+
+        # mostly to combat the space/endline caused by pasting the key/iv
+        key = key.removesuffix(' ').removesuffix('\n')
+        iv = iv.removesuffix(' ').removesuffix('\n')
+
+        key = bytes(key, "latin1").decode("unicode_escape").encode("latin1")
+        iv = bytes(iv, "latin1").decode("unicode_escape").encode("latin1")
+
         # this ast.literal_eval looks weird, but it basically just converts the str into bytes
         # without fucking everything up :)
-        display = DisplayWindow(self.root, ast.literal_eval(f"b'{self.key_entry.get().removesuffix(" ")}'"),
-                                ast.literal_eval(f"b'{self.iv_entry.get().removesuffix(" ")}'"),
-                                self.file_entry.get())
+        display = DisplayWindow(self.root, key, iv, file)
         display.validate_key_iv()
         self.destroy()
         display.collect_data()

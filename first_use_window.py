@@ -23,6 +23,27 @@ def copy_clipboard(entry: CTkEntry):
     pyperclip.copy(entry.get())
 
 
+# I kind of dislike this implementation, but around ~45% of the results of os.urandom() result in some kind of error
+# (for example ' and " basically sql-injecting themselves or '\n' causing every singe str -> bytes conversion method to
+# stop working [needed in main_window.py])
+def generate_key() -> bytes:
+    while True:
+        key = os.urandom(32)
+
+        if (b'"' in key) or (b"'" in key) or (b'\n' in key) or (b' ' in key):
+            continue
+        return key
+
+
+def generate_iv() -> bytes:
+    while True:
+        iv = os.urandom(16)
+
+        if (b'"' in iv) or (b"'" in iv) or (b'\n' in iv) or (b' ' in iv):
+            continue
+        return iv
+
+
 class FirstUseWindow:
     def __init__(self, master: CTk):
         self.root = CTkToplevel(master=master)
@@ -31,10 +52,8 @@ class FirstUseWindow:
         self.root.grab_set()
         self.root.focus_set()
 
-        # replaces made because if those symbols are present in key or iv, the whole encryption system basically
-        # sql-injects itself
-        self.key = os.urandom(32).replace(b"'", b';').replace(b'"', b';')
-        self.iv = os.urandom(16).replace(b"'", b';').replace(b'"', b';')
+        self.key = generate_key()
+        self.iv = generate_iv()
 
         self.title_label = CTkLabel(master=self.root, text='Create a source file', font=FONT_BIG, text_color=TEXTCOLOR)
         self.key_entry = CTkEntry(master=self.root, width=300, font=FONT_NORMAL, placeholder_text='Encryption Key',
@@ -73,6 +92,9 @@ class FirstUseWindow:
                                      border_width=WIDGET_BORDERWIDTH, command=self.destroy)
 
     def confirm(self):
+        if self.file_entry.get() == '':
+            messagebox.showerror('Error', 'Invalid Directory')
+            return
         ask_if_ready = messagebox.askyesno('Confirmation', 'After finishing this configuration you will no'
                                                            ' longer be able to get access to the key and initialization'
                                                            ' vector, which will be necessary to later decrypt the'

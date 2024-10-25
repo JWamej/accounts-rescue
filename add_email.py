@@ -42,10 +42,16 @@ class AddEmail:
         self.toggle_censor_checkbox = CensorCheckbox(master=self.root, entry=self.password_entry,
                                                      str_var=self.censor_password, font=FONT_NORMAL,
                                                      text_color=TEXTCOLOR).get()
+        self.exit_button = CTkButton(master=self.root, text='Exit', fg_color=BUTTON_FG,
+                                     border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH,
+                                     command=self.destroy)
 
     def confirm(self):
         email_plaintext: str = self.email_entry.get()
         password_plaintext: str = self.password_entry.get()
+
+        if email_plaintext == '' or password_plaintext == '':
+            return
 
         if ('<SEPARATOR>' in email_plaintext) or ('<SEPARATOR>' in password_plaintext):
             messagebox.showerror('Error', 'Error code: AE-SEPPERR\n'
@@ -60,23 +66,21 @@ class AddEmail:
             file.write(data_encrypted)
 
         messagebox.showinfo('E-Mail Added', 'E-Mail added successfully.')
-        self.destroy()
+        self.email_entry.delete(0, END)
+        self.password_entry.delete(0, END)
 
     def draw(self):
         self.root.grab_set()
         self.root.focus_set()
-        self.title_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5,0))
-        self.email_entry.grid(row=1, column=0, padx=10, pady=(5,0))
-        self.password_entry.grid(row=2, column=0, padx=10, pady=(5,0))
-        self.toggle_censor_checkbox.grid(row=2, column=1, padx=10, pady=(5,0))
-        self.confirm_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+        self.title_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5, 0))
+        self.email_entry.grid(row=1, column=0, padx=10, pady=(5, 0))
+        self.password_entry.grid(row=2, column=0, padx=10, pady=(5, 0))
+        self.toggle_censor_checkbox.grid(row=2, column=1, padx=10, pady=(5, 0))
+        self.confirm_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky='w')
+        self.exit_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky='e')
 
     def destroy(self):
-        self.title_label.destroy()
-        self.email_entry.destroy()
-        self.password_entry.destroy()
-        self.toggle_censor_checkbox.destroy()
-        self.confirm_button.destroy()
+
         self.root.destroy()
 
 

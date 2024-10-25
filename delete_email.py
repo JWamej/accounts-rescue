@@ -28,9 +28,9 @@ class DeleteEmail:
         self.iv = iv
         self.file = file
 
-        self.title_label = CTkLabel(master=self.root, text='Delete E-Mail', fg_color=WIDGET_FG, font=FONT_BIG)
+        self.title_label = CTkLabel(master=self.root, text='Delete E-Mail', font=FONT_BIG, text_color=TEXTCOLOR)
         self.email_delete_option = CTkOptionMenu(master=self.root, fg_color=BUTTON_FG, font=FONT_NORMAL,
-                                                 values=self.get_emails())
+                                                 values=self.get_emails(), width=300, dynamic_resizing=False)
         self.delete_button = CTkButton(master=self.root, text='Delete', fg_color=BUTTON_FG,
                                        border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH,
                                        command=self.delete_email)
@@ -48,6 +48,11 @@ class DeleteEmail:
         if data_encrypted[-1] == b'':
             data_encrypted.pop(-1)
 
+        # Without that, if there are no emails on the list, the program would choose "CTkOptionMenu" as a default
+        # email to delete
+        if not data_encrypted:
+            return ['']
+
         accounts = []
         for account in data_encrypted:
             email, password = decrypt_bytes(account, key=self.key, iv=self.iv).split('<SEPARATOR>')
@@ -62,6 +67,8 @@ class DeleteEmail:
 
     def delete_email(self):
         email_to_pop = self.email_delete_option.get()
+        if email_to_pop == '':
+            return
         index_to_pop = self.get_emails().index(email_to_pop) + 1
 
         confirmation = messagebox.askyesno('Confirmation', f'Are you sure you want to'
@@ -69,18 +76,26 @@ class DeleteEmail:
         if not confirmation:
             return
 
-        all_accounts = self.get_all_raw_data()
-        all_accounts.pop(index_to_pop)
+        try:
+            all_accounts = self.get_all_raw_data()
+            all_accounts.pop(index_to_pop)
 
-        # the line under is omitted to keep the b'' as the last part of the list, so in the end the file
-        # ends with b'<SEPARATOR>'
+            # the line under is omitted to keep the b'' as the last part of the list, so in the end the file
+            # ends with b'<SEPARATOR>'
+            # all_accounts.pop(-1)
 
-        # all_accounts.pop(-1)
+            with open(self.file, 'wb') as file:
+                file.write(b'<SEPARATOR>'.join(all_accounts))
 
+            new_emails = self.get_emails()
+            self.email_delete_option.configure(values=new_emails)
+            self.email_delete_option.set(f'{new_emails[0]}')
+        except IndexError:
+            self.email_delete_option.set('')
+            return
+        except ValueError:
+            return
 
-
-        with open(self.file, 'wb') as file:
-            file.write(b'<SEPARATOR>'.join(all_accounts))
 
     def draw(self):
         self.title_label.grid(row=0, column=0, columnspan=2, pady=(5, 0), padx=10)
