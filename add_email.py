@@ -5,7 +5,7 @@ from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, 
 import os
 import sys
 from crypto import encrypt_str, decrypt_bytes
-from main_window import CensorCheckbox
+from censor_checkbox import CensorCheckbox
 
 
 ROOT_BG = 'black'
@@ -22,6 +22,7 @@ class AddEmail:
     def __init__(self, master: CTk, file_path: str, key: bytes, iv: bytes):
         self.root = CTkToplevel(master)
         self.root.configure(fg_color=ROOT_BG)
+        self.root.title('Add E-Mail')
 
         self.censor_password = StringVar(value='*')
         self.file_path = file_path
@@ -37,24 +38,10 @@ class AddEmail:
                                        show='*', placeholder_text='Password')
         self.confirm_button = CTkButton(master=self.root, text='Confirm', fg_color=BUTTON_FG, font=FONT_NORMAL,
                                         border_width=WIDGET_BORDERWIDTH, border_color=WIDGET_BORDER_COLOR,
-                                        command=self.confirm, width=100, height=5, text_color=TEXTCOLOR)
+                                        command=self.confirm, text_color=TEXTCOLOR)
         self.toggle_censor_checkbox = CensorCheckbox(master=self.root, entry=self.password_entry,
                                                      str_var=self.censor_password, font=FONT_NORMAL,
                                                      text_color=TEXTCOLOR).get()
-
-    def draw(self):
-        self.title_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5,0))
-        self.email_entry.grid(row=1, column=0, padx=10, pady=(5,0))
-        self.password_entry.grid(row=2, column=0, padx=10, pady=(5,0))
-        self.toggle_censor_checkbox.grid(row=2, column=1, padx=10, pady=(5,0))
-        self.confirm_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
-
-    def destroy(self):
-        self.title_label.destroy()
-        self.email_entry.destroy()
-        self.password_entry.destroy()
-        self.toggle_censor_checkbox.destroy()
-        self.confirm_button.destroy()
 
     def confirm(self):
         email_plaintext: str = self.email_entry.get()
@@ -68,10 +55,29 @@ class AddEmail:
         data_encrypted: bytes = encrypt_str(f'{email_plaintext}<SEPARATOR>{password_plaintext}',
                                             self.key, self.iv)
 
+        data_encrypted = data_encrypted + b'<SEPARATOR>'
         with open(self.file_path, 'ab') as file:
-            file.write(data_encrypted + b'<SEPARATOR>')
+            file.write(data_encrypted)
 
         messagebox.showinfo('E-Mail Added', 'E-Mail added successfully.')
+        self.destroy()
+
+    def draw(self):
+        self.root.grab_set()
+        self.root.focus_set()
+        self.title_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5,0))
+        self.email_entry.grid(row=1, column=0, padx=10, pady=(5,0))
+        self.password_entry.grid(row=2, column=0, padx=10, pady=(5,0))
+        self.toggle_censor_checkbox.grid(row=2, column=1, padx=10, pady=(5,0))
+        self.confirm_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+
+    def destroy(self):
+        self.title_label.destroy()
+        self.email_entry.destroy()
+        self.password_entry.destroy()
+        self.toggle_censor_checkbox.destroy()
+        self.confirm_button.destroy()
+        self.root.destroy()
 
 
 if __name__ == '__main__':

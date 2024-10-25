@@ -4,9 +4,11 @@ import os
 import sys
 from crypto import encrypt_str, decrypt_bytes
 from first_use_window import FirstUseWindow
+from display_window import DisplayWindow
 from censor_checkbox import CensorCheckbox
 from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, CTkToplevel, BooleanVar, IntVar,
                            CTkCheckBox, StringVar)
+import ast
 
 
 ROOT_BG = 'black'
@@ -17,23 +19,6 @@ WIDGET_BORDER_COLOR = '#818181'
 WIDGET_BORDERWIDTH = 1
 FONT_NORMAL = ('Arial', 12)
 FONT_BIG = ('Arial', 18)
-
-
-class CensorCheckbox:
-    def __init__(self, master: CTk | CTkToplevel, entry: CTkEntry, str_var: StringVar, font: tuple, text_color: str):
-        self.root = master
-        self.entry = entry
-        self.censor = str_var
-        self.font = font
-        self.text_color = text_color
-
-        self.toggle_censor_checkbox = CTkCheckBox(master=self.root, text='Hide', font=font,
-                                                  variable=self.censor, onvalue='*', offvalue='',
-                                                  text_color=self.text_color,
-                                                  command=lambda: (self.entry.configure(show=self.censor.get())))
-
-    def get(self) -> CTkCheckBox:
-        return self.toggle_censor_checkbox
 
 
 class MainWindow:
@@ -75,10 +60,19 @@ class MainWindow:
         self.file_entry.configure(state='disabled')
 
     def confirm(self):
-        raise NotImplementedError
+        # this ast.literal_eval looks weird, but it basically just converts the str into bytes
+        # without fucking everything up :)
+        display = DisplayWindow(self.root, ast.literal_eval(f"b'{self.key_entry.get().removesuffix(" ")}'"),
+                                ast.literal_eval(f"b'{self.iv_entry.get().removesuffix(" ")}'"),
+                                self.file_entry.get())
+        display.validate_key_iv()
+        self.destroy()
+        display.collect_data()
+        display.draw()
+        display.write_data_on_textbox()
+        display.update_text()
 
     def first_use(self):
-        self.destroy()
         first_use_window = FirstUseWindow(master=self.root)
         first_use_window.draw()
 

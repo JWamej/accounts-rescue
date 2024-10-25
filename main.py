@@ -18,15 +18,6 @@ FONT_NORMAL = ('Arial', 12)
 FONT_BIG = ('Arial', 18)
 
 
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     root = CTk()
     root.title('Get Passwords')
