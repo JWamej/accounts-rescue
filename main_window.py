@@ -8,7 +8,7 @@ from display_window import DisplayWindow
 from censor_checkbox import CensorCheckbox
 from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, CTkToplevel, BooleanVar, IntVar,
                            CTkCheckBox, StringVar)
-import ast
+from info_window import InfoWindow
 
 
 ROOT_BG = 'black'
@@ -57,6 +57,8 @@ class MainWindow:
         self.first_use_button = CTkButton(master=self.root, text='First Use', font=FONT_NORMAL, text_color=TEXTCOLOR,
                                           fg_color=BUTTON_FG, border_color=WIDGET_BORDER_COLOR,
                                           border_width=WIDGET_BORDERWIDTH, command=self.first_use)
+        self.info_button = CTkButton(master=self.root, text='?', width=30, height=5, font=FONT_NORMAL,
+                                     text_color=TEXTCOLOR, fg_color=BUTTON_FG, command=self.info)
 
     def browse_files(self, *args):
         file = filedialog.askopenfilename(title='Select the Source File')
@@ -100,7 +102,12 @@ class MainWindow:
         first_use_window = FirstUseWindow(master=self.root)
         first_use_window.draw()
 
+    def info(self):
+        window_info = InfoWindow(master=self.root)
+        window_info.draw()
+
     def draw(self):
+        self.info_button.grid(row=0, column=0, columnspan=2, pady=(3, 0), padx=(0, 5), sticky='ne')
         self.title_label.grid(row=0, column=0, columnspan=2, pady=(5, 0), padx=10)
         self.key_entry.grid(row=1, column=0, pady=(5, 0), padx=10)
         self.toggle_censor_key.grid(row=1, column=1, pady=(5, 0), padx=10)
