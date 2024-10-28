@@ -92,8 +92,8 @@ class FirstUseWindow:
                                      border_width=WIDGET_BORDERWIDTH, command=self.destroy)
 
     def confirm(self):
-        if self.file_entry.get() == '':
-            messagebox.showerror('Error', 'Invalid Directory')
+        if self.file_entry.get() == '' or (not os.path.isdir(self.file_entry.get())):
+            messagebox.showerror('Error', 'Error code: FUW-DIR\nInvalid Directory')
             return
         ask_if_ready = messagebox.askyesno('Confirmation', 'After finishing this configuration you will no'
                                                            ' longer be able to get access to the key and initialization'
@@ -137,12 +137,3 @@ class FirstUseWindow:
 
     def destroy(self):
         self.root.destroy()
-        # self.title_label.destroy()
-        # self.key_entry.destroy()
-        # self.copy_button_key.destroy()
-        # self.iv_entry.destroy()
-        # self.copy_button_iv.destroy()
-        # self.file_entry.destroy()
-        # self.browse_dirs_button.destroy()
-        # self.confirm_button.destroy()
-

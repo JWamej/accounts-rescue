@@ -72,13 +72,13 @@ class MainWindow:
         file = self.file_entry.get()
 
         if key == '':
-            messagebox.showerror('Error', 'Invalid Key')
+            messagebox.showerror('Error', 'Error code: MW-KEYLEN\nInvalid Key')
             return
         if iv == '':
-            messagebox.showerror('Error', 'Invalid IV')
+            messagebox.showerror('Error', 'Error code: MW-KEYLEN\nInvalid IV')
             return
-        if file == '':
-            messagebox.showerror('Error', 'Invalid File Path')
+        if file == '' or not os.path.exists(file):
+            messagebox.showerror('Error', 'Error code: MW-FILEINV\nInvalid File Path')
             return
 
         # mostly to combat the space/endline caused by pasting the key/iv
