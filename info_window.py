@@ -29,14 +29,14 @@ class InfoWindow:
         self.tutorial_label = CTkLabel(master=self.tutorial_frame, text_color=TEXTCOLOR, text='Tutorial', font=FONT_BIG)
         self.tutorial_textbox = CTkTextbox(master=self.tutorial_frame, text_color=TEXTCOLOR, fg_color=WIDGET_FG,
                                            border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH,
-                                           font=FONT_NORMAL, width=650, height=420)
+                                           font=FONT_NORMAL, width=660, height=420)
         self.tutorial_textbox.insert(0.0, info_window_texts.tutorial_data)
         self.tutorial_textbox.configure(state='disabled')
 
         self.faq_label = CTkLabel(master=self.faq_frame, text_color=TEXTCOLOR, text='Faq', font=FONT_BIG)
         self.faq_textbox = CTkTextbox(master=self.faq_frame, text_color=TEXTCOLOR, fg_color=WIDGET_FG,
                                       border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH,
-                                      font=FONT_NORMAL, width=650, wrap=WORD)
+                                      font=FONT_NORMAL, width=660, wrap=WORD)
         self.faq_textbox.insert(0.0, info_window_texts.faq)
         self.faq_textbox.configure(state='disabled')
 
@@ -44,7 +44,7 @@ class InfoWindow:
                                        font=FONT_BIG)
         self.dosdonts_textbox = CTkTextbox(master=self.dosdonts_frame, text_color=TEXTCOLOR, fg_color=WIDGET_FG,
                                            border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH,
-                                           font=FONT_NORMAL, width=650, height=140)
+                                           font=FONT_NORMAL, width=660, height=140)
         self.dosdonts_textbox.insert(0.0, info_window_texts.dosdonts)
         self.dosdonts_textbox.configure(state='disabled')
 

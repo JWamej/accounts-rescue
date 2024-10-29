@@ -81,7 +81,7 @@ class FirstUseWindow:
                                    border_width=WIDGET_BORDERWIDTH, state='disabled')
 
         self.browse_dirs_button = CTkButton(master=self.root, font=FONT_NORMAL,
-                                            text='Select the directory',
+                                            text='Select directory',
                                             fg_color=BUTTON_FG, text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
                                             border_width=WIDGET_BORDERWIDTH, command=self.browse_dirs)
         self.confirm_button = CTkButton(master=self.root, text='Confirm', font=FONT_NORMAL, text_color=TEXTCOLOR,

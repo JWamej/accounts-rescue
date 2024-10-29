@@ -44,7 +44,7 @@ class MainWindow:
         self.file_entry.configure(state='disabled')
         self.file_entry.bind('<Button-1>', self.browse_files)
         self.browse_files_button = CTkButton(master=self.root, width=100, font=FONT_NORMAL,
-                                             text='Select the File', fg_color=WIDGET_FG,
+                                             text='Select file', fg_color=WIDGET_FG,
                                              text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
                                              border_width=WIDGET_BORDERWIDTH, command=self.browse_files)
         self.toggle_censor_key = CensorCheckbox(master=self.root, entry=self.key_entry, str_var=self.censor_key,
@@ -54,7 +54,7 @@ class MainWindow:
         self.confirm_button = CTkButton(master=self.root, text='Confirm', font=FONT_NORMAL, text_color=TEXTCOLOR,
                                         fg_color=BUTTON_FG, border_color=WIDGET_BORDER_COLOR,
                                         border_width=WIDGET_BORDERWIDTH, command=self.confirm)
-        self.first_use_button = CTkButton(master=self.root, text='First Use', font=FONT_NORMAL, text_color=TEXTCOLOR,
+        self.first_use_button = CTkButton(master=self.root, text='First use', font=FONT_NORMAL, text_color=TEXTCOLOR,
                                           fg_color=BUTTON_FG, border_color=WIDGET_BORDER_COLOR,
                                           border_width=WIDGET_BORDERWIDTH, command=self.first_use)
         self.info_button = CTkButton(master=self.root, text='?', width=30, height=5, font=FONT_NORMAL,
@@ -128,6 +128,7 @@ class MainWindow:
         self.browse_files_button.destroy()
         self.confirm_button.destroy()
         self.first_use_button.destroy()
+        self.info_button.destroy()
 
 
 if __name__ == '__main__':
