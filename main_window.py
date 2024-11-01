@@ -44,7 +44,7 @@ class MainWindow:
         self.file_entry.configure(state='disabled')
         self.file_entry.bind('<Button-1>', self.browse_files)
         self.browse_files_button = CTkButton(master=self.root, width=100, font=FONT_NORMAL,
-                                             text='Select file', fg_color=WIDGET_FG,
+                                             text='Select file', fg_color=BUTTON_FG,
                                              text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
                                              border_width=WIDGET_BORDERWIDTH, command=self.browse_files)
         self.toggle_censor_key = CensorCheckbox(master=self.root, entry=self.key_entry, str_var=self.censor_key,

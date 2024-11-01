@@ -50,7 +50,7 @@ faq = (""
 
 dosdonts = (""
             "Dos and Don'ts:\n"
-            "   - Do keep backups of the source file on different, unrelated drives.\n"
-            "   - Do store the key and IV on secure drives and/or in physical form.\n"
-            "   - Use this application to store accounts that do not require frequent access—there are better alternatives for frequent use.\n"
+            "   - Keep backups of the source file on different, unrelated drives.\n"
+            "   - Store the key and IV on secure drives and/or in physical form.\n"
+            "   - Use this application to store accounts that do not require frequent access - there are better alternatives for frequent use.\n"
             "   - Never store the key and IV in the same location as the source file and application.\n")

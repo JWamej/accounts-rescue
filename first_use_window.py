@@ -56,7 +56,7 @@ class FirstUseWindow:
         self.iv = generate_iv()
 
         self.title_label = CTkLabel(master=self.root, text='Create a source file', font=FONT_BIG, text_color=TEXTCOLOR)
-        self.key_entry = CTkEntry(master=self.root, width=300, font=FONT_NORMAL, placeholder_text='Encryption Key',
+        self.key_entry = CTkEntry(master=self.root, width=600, font=FONT_NORMAL, placeholder_text='Encryption Key',
                                   fg_color=WIDGET_FG, text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
                                   border_width=WIDGET_BORDERWIDTH)
         self.key_entry.insert(0, str(self.key)[2:-1])
@@ -66,7 +66,7 @@ class FirstUseWindow:
                                          border_color=WIDGET_BORDER_COLOR,
                                          command=lambda: (copy_clipboard(entry=self.key_entry)))
 
-        self.iv_entry = CTkEntry(master=self.root, width=300, font=FONT_NORMAL,
+        self.iv_entry = CTkEntry(master=self.root, width=600, font=FONT_NORMAL,
                                  placeholder_text='Initialization Vector', fg_color=WIDGET_FG, text_color=TEXTCOLOR,
                                  border_color=WIDGET_BORDER_COLOR, border_width=WIDGET_BORDERWIDTH)
         self.iv_entry.insert(0, str(self.iv)[2:-1])
@@ -76,7 +76,7 @@ class FirstUseWindow:
                                         border_color=WIDGET_BORDER_COLOR,
                                         command=lambda: (copy_clipboard(entry=self.iv_entry)))
 
-        self.file_entry = CTkEntry(master=self.root, width=300, font=FONT_NORMAL, placeholder_text='Source File',
+        self.file_entry = CTkEntry(master=self.root, width=600, font=FONT_NORMAL, placeholder_text='Source File',
                                    fg_color=WIDGET_FG, text_color=TEXTCOLOR, border_color=WIDGET_BORDER_COLOR,
                                    border_width=WIDGET_BORDERWIDTH, state='disabled')
 
