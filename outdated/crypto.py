@@ -1,36 +1,22 @@
+import cryptography
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import os
-import secrets
+
 
 class CipherError(Exception):
-    def __init__(self, message='This key cannot decrypt the file.'):
+    def __init__(self, message='Invalid key and/or iv.'):
         self.message = message
         super().__init__(self.message)
 
 
-class KeyLengthError(Exception):
-    def __init__(self, message = 'Invalid key.'):
-        self.message = message
-        super().__init__(self.message)
-
-
-def generate_key() -> bytes:
-    key = secrets.token_urlsafe(36)
-    return key.encode()
-
-
-def decode_key(key: bytes) -> tuple[bytes, bytes]:
-    iv = key[32:]
-    key = key[:32]
-    return key, iv
-
-def encrypt_str(plain_text: str, key: bytes) -> bytes:
-    if len(key) != 48:
-        raise KeyLengthError
-
-    key, iv = decode_key(key)
+def encrypt_str(plain_text: str, key: bytes, iv: bytes) -> bytes:
+    if len(key) != 32:
+        raise ValueError("Key must be 32 bytes long.")
+    if len(iv) != 16:
+        raise ValueError("IV must be 16 bytes long.")
 
     # Convert plaintext to bytes
     plain_text_bytes = plain_text.encode('utf-8')
@@ -49,12 +35,12 @@ def encrypt_str(plain_text: str, key: bytes) -> bytes:
     return cipher_bytes
 
 
-def decrypt_bytes(cipher_text: bytes, key: bytes) -> str:
+def decrypt_bytes(cipher_text: bytes, key: bytes, iv: bytes) -> str:
     # Ensure the key is 32 bytes (256 bits) and IV is 16 bytes (AES block size)
-    if len(key) != 48:
-        raise KeyLengthError
-
-    key, iv = decode_key(key)
+    if len(key) != 32:
+        raise ValueError(f"Key must be 32 bytes long for AES-256 decryption.\nkey: {key}")
+    if len(iv) != 16:
+        raise ValueError(f"IV must be 16 bytes long.\niv: {iv}")
 
     try:
         # Create AES-256 cipher in CBC mode for decryption
@@ -75,10 +61,11 @@ def decrypt_bytes(cipher_text: bytes, key: bytes) -> str:
 
 
 if __name__ == '__main__':
-    KEY = generate_key()
-    text = 'Mofat'
-    text_en = encrypt_str(text, KEY)
+    text = 'Mam ADHD'
     print(text)
+    KEY = os.urandom(32)
+    IV = os.urandom(16)
+    text_en = encrypt_str(text, KEY, IV)
     print(text_en)
-    text_de = decrypt_bytes(text_en, KEY)
+    text_de = decrypt_bytes(text_en, KEY, IV)
     print(text_de)

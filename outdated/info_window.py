@@ -1,7 +1,4 @@
-from tkinter import filedialog, messagebox
-import customtkinter
-from customtkinter import (CTkEntry, CTk, CTkButton, END, CTkTextbox, CTkLabel, CTkToplevel, BooleanVar, IntVar,
-                           CTkCheckBox, StringVar, CTkOptionMenu, CTkFrame, WORD)
+from customtkinter import (CTk, CTkButton, CTkTextbox, CTkLabel, CTkToplevel, CTkFrame, WORD)
 import info_window_texts
 
 ROOT_BG = 'black'
