@@ -8,6 +8,8 @@ from ui import *
 
 
 if __name__ == '__main__':
-    root = Window(geometry='450x400', min_size=(450, 400))
+    root = Window(min_size=(200, 100))
+
+    main_window = MainWindow(master=root).draw()
 
     root.mainloop()

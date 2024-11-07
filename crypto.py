@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives import padding
 import os
 import secrets
 
+
 class CipherError(Exception):
     def __init__(self, message='This key cannot decrypt the file.'):
         self.message = message
@@ -11,31 +12,29 @@ class CipherError(Exception):
 
 
 class KeyLengthError(Exception):
-    def __init__(self, message = 'Invalid key.'):
+    def __init__(self, message='Invalid key.'):
         self.message = message
         super().__init__(self.message)
 
 
 def generate_key() -> bytes:
-    key = secrets.token_urlsafe(36)
-    return key.encode()
+    return secrets.token_urlsafe(36).encode()
 
 
-def decode_key(key: bytes) -> tuple[bytes, bytes]:
-    iv = key[32:]
-    key = key[:32]
-    return key, iv
+def decode_key(full_key: bytes) -> tuple[bytes, bytes]:
+    return full_key[:32], full_key[32:]
 
-def encrypt_str(plain_text: str, key: bytes) -> bytes:
-    if len(key) != 48:
+
+def encrypt_str(plain_text: str, encryption_key: bytes) -> bytes:
+    if len(encryption_key) != 48:
         raise KeyLengthError
 
-    key, iv = decode_key(key)
+    key, iv = decode_key(encryption_key)
 
     # Convert plaintext to bytes
     plain_text_bytes = plain_text.encode('utf-8')
 
-    # Pad the plaintext to ensure it's a multiple of the block size (16 bytes)
+    # Pad the plaintext
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
     padded_plain_text = padder.update(plain_text_bytes) + padder.finalize()
 
@@ -49,16 +48,16 @@ def encrypt_str(plain_text: str, key: bytes) -> bytes:
     return cipher_bytes
 
 
-def decrypt_bytes(cipher_text: bytes, key: bytes) -> str:
+def decrypt_bytes(cipher_text: bytes, full_decryption_key: bytes) -> str:
     # Ensure the key is 32 bytes (256 bits) and IV is 16 bytes (AES block size)
-    if len(key) != 48:
+    if len(full_decryption_key) != 48:
         raise KeyLengthError
 
-    key, iv = decode_key(key)
+    decryption_key, iv = decode_key(full_decryption_key)
 
     try:
         # Create AES-256 cipher in CBC mode for decryption
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(algorithms.AES(decryption_key), modes.CBC(iv), backend=default_backend())
         decryptor = cipher.decryptor()
 
         # Decrypt the ciphertext
@@ -76,6 +75,7 @@ def decrypt_bytes(cipher_text: bytes, key: bytes) -> str:
 
 if __name__ == '__main__':
     KEY = generate_key()
+    print(KEY)
     text = 'Mofat'
     text_en = encrypt_str(text, KEY)
     print(text)
