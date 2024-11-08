@@ -9,7 +9,8 @@ from ui import *
 
 if __name__ == '__main__':
     root = Window(min_size=(200, 100))
+    root.resizable(False, False)
 
-    main_window = MainWindow(master=root).draw()
+    MainWindow(master=root).draw()
 
     root.mainloop()

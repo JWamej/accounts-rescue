@@ -1,6 +1,6 @@
 from typing import Any, Literal
 from customtkinter import (CTk, CTkToplevel, CTkFrame, CTkLabel, CTkEntry, CTkButton, CTkTextbox, END, WORD, CTkFont,
-                           Variable, CTkImage)
+                           Variable, CTkImage, StringVar, CTkCheckBox)
 from tkinter.ttk import Treeview as TtkTreeview
 from tkinter import filedialog, messagebox, Misc
 import os
@@ -68,6 +68,61 @@ class Frame(CTkFrame):
                          border_color = border_color,
                          background_corner_colors = background_corner_colors,
                          overwrite_preferred_drawing_method = overwrite_preferred_drawing_method)
+
+
+class KeyboardFrame(CTkFrame):
+    def __init__(self,
+                 master: Any,
+                 width: int = 200,
+                 height: int = 200,
+                 corner_radius: int | str | None = None,
+                 border_width: int | str | None = None,
+                 bg_color: str | tuple[str, str] = "transparent",
+                 fg_color: str | tuple[str, str] | None = None,
+                 border_color: str | tuple[str, str] | None = None,
+                 background_corner_colors: tuple[str | tuple[str, str]] | None = None,
+                 overwrite_preferred_drawing_method: str | None = None):
+        super().__init__(master=master,
+                         width=width,
+                         height=height,
+                         corner_radius=corner_radius,
+                         border_width=border_width,
+                         bg_color=bg_color,
+                         fg_color=fg_color,
+                         border_color=border_color,
+                         background_corner_colors=background_corner_colors,
+                         overwrite_preferred_drawing_method=overwrite_preferred_drawing_method)
+        self.buttons_draw()
+
+    def buttons_draw(self):
+        default_chars = ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'q', 'w', 'e', 'r', 't', 'y',
+                         'u', 'i', 'o', 'p', '[', ']', '\\', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'", 'z',
+                         'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/']
+        shift_chars = ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 'Q', 'W', 'E', 'R', 'T', 'Y',
+                       'U', 'I', 'O', 'P', '{', '}', '|', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', 'Z',
+                       'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?']
+
+        grid_place = (0, 0)
+        button_list = []
+        for index in range(47):
+            button = Button(master=self, text=default_chars[index], width=30)
+            button.configure(command=self.on_click(character=button["text"]))
+            button_list.append(button)
+
+            if grid_place[0] == 0:
+                padx = (5, 1)
+            elif grid_place[0] == 13:
+                padx = (1, 5)
+            else:
+                padx = 1
+
+            button.grid(row=grid_place[0], column=grid_place[1])
+
+    def on_click(self, character: str):
+
+
+
+
 
 
 class Button(CTkButton):
@@ -138,7 +193,8 @@ class Entry(CTkEntry):
                  textvariable: Variable | None = None,
                  placeholder_text: str | None = None,
                  font: tuple | CTkFont | None = FONT_NORMAL,
-                 state: str = 'normal'):
+                 state: str = 'normal',
+                 show: str | int = None):
 
         super().__init__(master = master,
                          width = width,
@@ -153,7 +209,8 @@ class Entry(CTkEntry):
                          textvariable = textvariable,
                          placeholder_text = placeholder_text,
                          font = font,
-                         state = state)
+                         state = state,
+                         show = show)
 
 
 class TextBox(CTkTextbox):
@@ -258,6 +315,58 @@ class Treeview(TtkTreeview):
 
         self.tk.call("source", "azure.tcl")
         self.tk.call("set_theme", "dark")
+
+
+class CensorCheckbox(CTkCheckBox):
+    def __init__(self,
+                 master: Any,
+                 entry: Entry,
+                 str_var: StringVar,
+                 width: int = 65,
+                 height: int = 24,
+                 checkbox_width: int = 18,
+                 checkbox_height: int = 18,
+                 corner_radius: int | None = None,
+                 border_width: int | None = DEFAULT_BORDERWIDTH,
+                 bg_color: str | tuple[str, str] = "transparent",
+                 fg_color: str | tuple[str, str] | None = DEFAULT_BUTTON_FG,
+                 hover_color: str | tuple[str, str] | None = DEFAULT_BUTTON_HOVER_FG,
+                 border_color: str | tuple[str, str] | None = DEFAULT_BORDER_COLOR,
+                 checkmark_color: str | tuple[str, str] | None = None,
+                 text_color: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR,
+                 text_color_disabled: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR_DISABLED,
+                 text: str = "Show",
+                 font: tuple | CTkFont | None = FONT_NORMAL,
+                 textvariable: Variable | None = None,
+                 state: str = 'normal',
+                 hover: bool = True,
+                 onvalue: int | str = '',
+                 offvalue: int | str = '*'):
+
+         super().__init__(master=master,
+                          width=width,
+                          height=height,
+                          checkbox_width=checkbox_width,
+                          checkbox_height=checkbox_height,
+                          corner_radius=corner_radius,
+                          border_width=border_width,
+                          bg_color=bg_color,
+                          fg_color=fg_color,
+                          hover_color=hover_color,
+                          border_color=border_color,
+                          checkmark_color=checkmark_color,
+                          text_color=text_color,
+                          text_color_disabled=text_color_disabled,
+                          text=text,
+                          font=font,
+                          textvariable=textvariable,
+                          state=state,
+                          hover=hover,
+                          command=lambda: (entry.configure(show=str_var.get())),
+                          onvalue=onvalue,
+                          offvalue=offvalue,
+                          variable=str_var)
+
 
 
 if __name__ == '__main__':
