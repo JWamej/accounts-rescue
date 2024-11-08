@@ -67,8 +67,8 @@ class MainWindow:
         self.settings_button.bind('<FocusOut>', lambda event: self.settings_button.configure(fg_color=DEFAULT_BUTTON_FG))
 
         self.first_use_button = Button(master=self.main_frame,
-                                text='First use',
-                                command=self.first_use_init)
+                                       text='First use',
+                                       command=self.first_use_init)
         self.first_use_button.bind('<Return>', self.first_use_init)
         self.first_use_button.bind('<FocusIn>', lambda event: self.first_use_button.configure(fg_color=DEFAULT_BUTTON_HOVER_FG))
         self.first_use_button.bind('<FocusOut>', lambda event: self.first_use_button.configure(fg_color=DEFAULT_BUTTON_FG))
@@ -80,11 +80,11 @@ class MainWindow:
         self.confirm_button.bind('<FocusIn>', lambda event: self.confirm_button.configure(fg_color=DEFAULT_BUTTON_HOVER_FG))
         self.confirm_button.bind('<FocusOut>', lambda event: self.confirm_button.configure(fg_color=DEFAULT_BUTTON_FG))
 
-        self.widget_dict = {1 : self.key_entry,
-                            2 : self.confirm_button,
-                            3 : self.first_use_button,
-                            4 : self.info_button,
-                            5 : self.settings_button}
+        self.widget_dict = {1: self.key_entry,
+                            2: self.confirm_button,
+                            3: self.first_use_button,
+                            4: self.info_button,
+                            5: self.settings_button}
         self.focus_index = IntVar(value=1)
 
     def set_focus_by_index(self, *args):
