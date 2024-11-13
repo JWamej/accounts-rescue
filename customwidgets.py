@@ -5,6 +5,7 @@ from tkinter.ttk import Treeview as TtkTreeview
 from tkinter import filedialog, messagebox, Misc
 import os
 import sys
+import keyboard
 
 
 DEFAULT_ROOT_FG = 'black'
@@ -70,10 +71,10 @@ class Frame(CTkFrame):
                          overwrite_preferred_drawing_method=overwrite_preferred_drawing_method)
 
 
-# Yea so that HAS to be optimised somehow. This piece of shit does not deserve to be this long.
 class KeyboardFrame(CTkFrame):
     def __init__(self,
                  master: Any,
+                 write_on: CTkEntry | CTkTextbox,
                  width: int = 200,
                  height: int = 200,
                  size_multiplier: float = 1,
@@ -97,14 +98,15 @@ class KeyboardFrame(CTkFrame):
                          overwrite_preferred_drawing_method=overwrite_preferred_drawing_method)
         self.size_multiplier = size_multiplier
         self.font = font
-        self.shifted = BooleanVar(value=False)
+        self.linked_widged = write_on
+        self.shift_on = BooleanVar(value=False)
+        self.caps_on = BooleanVar(value=False)
         self.default_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '`', 'q', 'w', 'e', 'r', 't',
                               'y', 'u', 'i', 'o', 'p', '[', ']', '\\', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '/',
                               ';', "'", 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.']
-        self.shift_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '~', 'Q', 'W', 'E', 'R', 'T',
+        self.shifted_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '~', 'Q', 'W', 'E', 'R', 'T',
                             'Y', 'U', 'I', 'O', 'P', '{', '}', '|', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '?',
                             ':', '"', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>']
-        self.active_chars = self.default_chars
         self.buttons_shiftable_list = []
         self.buttons_draw()
 
@@ -115,14 +117,19 @@ class KeyboardFrame(CTkFrame):
 
         # Loop that grids all buttons except: spacebar, capslock, shift, backspace, arrows
         for index in range(47):
-            button = Button(master=self, text=self.active_chars[index], width=size, font=self.font)
+            button = Button(master=self,
+                            text=self.default_chars[index],
+                            width=int(size),
+                            font=self.font)
             button.configure(hover_color=DEFAULT_BUTTON_FG,
-                             command=lambda t=self.active_chars[index]: self.normal_on_click(character=t))
+                             command=lambda t=self.default_chars[index]: self.normal_on_click(character=t))
             self.buttons_shiftable_list.append(button)
 
-            # looks weir, but works
-            if grid_place == [0, 0] or grid_place == [0, 1] or grid_place == [1, 2]:
+            # looks weird, but works
+            if grid_place == [0, 0] or grid_place == [0, 1]:
                 padx = (5, 1)
+            elif grid_place == [1, 2]:
+                padx = (3, 1)
             elif grid_place == [28, 0] or grid_place == [28, 1] or grid_place == [28, 2] or grid_place == [28, 3]:
                 padx = (1, 5)
             else:
@@ -164,63 +171,71 @@ class KeyboardFrame(CTkFrame):
 
         backspace = Button(master=self,
                            text='<==',
-                           width=2 * size,
+                           width=int(2 * size),
                            hover_color=DEFAULT_BUTTON_FG,
                            font=self.font,
                            command=self.backspace_on_click)
 
         capslock = Button(master=self,
                           text='caps',
-                          width=2 * size,
+                          width=int(2 * size),
                           hover_color=DEFAULT_BUTTON_FG,
                           font=self.font,
                           command=self.capslock_on_click)
 
+        enter = Button(master=self,
+                       text='enter',
+                       width=int(2.5 * size + 1),
+                       hover_color=DEFAULT_BUTTON_FG,
+                       font=self.font,
+                       command=self.enter_on_click)
+
         shift = Button(master=self,
                        text='shift',
-                       width=int(2.5 * size + 1),
+                       width=int(3.5 * size + 3),
                        hover_color=DEFAULT_BUTTON_FG,
                        font=self.font,
                        command=self.toggle_shift_on_click)
 
         spacebar = Button(master=self,
                           text='space',
-                          width=5 * size + 8,
+                          width=int(5 * size + 8),
                           hover_color=DEFAULT_BUTTON_FG,
                           font=self.font,
                           command=self.spacebar_on_click)
 
         arrow_up = Button(master=self,
                           text='↑',
-                          width=size,
+                          width=int(size),
                           hover_color=DEFAULT_BUTTON_FG,
                           font=self.font,
-                          command=self.arrow_up_on_click)
+                          command=lambda: self.arrow_on_click(0, 1))
 
         arrow_left = Button(master=self,
                             text='←',
-                            width=size,
+                            width=int(size),
                             hover_color=DEFAULT_BUTTON_FG,
                             font=self.font,
-                            command=self.arrow_left_on_click)
+                            command=lambda: self.arrow_on_click(-1, 0))
 
         arrow_down = Button(master=self,
                             text='↓',
-                            width=size,
+                            width=int(size),
                             hover_color=DEFAULT_BUTTON_FG,
                             font=self.font,
-                            command=self.arrow_down_on_click)
+                            command=lambda: self.arrow_on_click(0, -1))
 
         arrow_right = Button(master=self,
                              text='→',
-                             width=size,
+                             width=int(size),
                              hover_color=DEFAULT_BUTTON_FG,
                              font=self.font,
-                             command=self.arrow_right_on_click)
+                             command=lambda: self.arrow_on_click(1, 0))
 
         backspace.grid(row=0, column=20, columnspan=4, padx=1, pady=(5, 1))
         capslock.grid(row=1, column=20, columnspan=4, padx=1, pady=1)
-        shift.grid(row=2, column=19, columnspan=5, padx=1, pady=1)
+        enter.grid(row=2, column=19, columnspan=5, padx=1, pady=1)
+        shift.grid(row=3, column=17, columnspan=7, padx=1, pady=1)
         spacebar.grid(row=4, column=5, columnspan=10, pady=(1, 5))
         arrow_up.grid(row=3, column=26, padx=1, pady=1)
         arrow_left.grid(row=4, column=24, padx=1, pady=(1, 5))
@@ -228,42 +243,72 @@ class KeyboardFrame(CTkFrame):
         arrow_right.grid(row=4, column=28, padx=(1, 5), pady=(1, 5))
 
     def normal_on_click(self, character: str, *args):
-        print(character)
+        position = self.linked_widged.index('insert')
+
+        # ?There is a glitch that if the shift is pressed on the normal keyboard, it starts to work only after 2nd input
+        if self.shift_on.get() or self.caps_on.get() or keyboard.is_pressed('shift'):
+            character = self.shifted_chars[self.default_chars.index(character)]
+            self.linked_widged.insert(position, character)
+
+            if self.shift_on.get():
+                self.toggle_shift_on_click()
+            return
+        self.linked_widged.insert(position, character)
 
     def backspace_on_click(self):
-        print('back')
+        if isinstance(self.linked_widged, Entry):
+            x = self.linked_widged.index('insert')
+            self.linked_widged.delete(int(x) - 1)
+        elif isinstance(self.linked_widged, Textbox):
+            y, x = self.linked_widged.index('insert').split('.')
+            self.linked_widged.delete(f'{y}.{int(x) - 1}')
 
     def capslock_on_click(self):
-        print('caps')
+        if self.caps_on.get():
+            self.caps_on.set(False)
+            self.change_upper_lowercase(lowercase=True)
+            return
+        self.caps_on.set(True)
+        self.change_upper_lowercase(lowercase=False)
+
+    # could cause some problems, because it doesn't insert the 'enter' directly, instead it
+    # imitates the 'enter' key-press
+    def enter_on_click(self):
+        keyboard.press('enter')
+
 
     def toggle_shift_on_click(self):
-        if self.shifted.get():
-            print('1')
-            self.shifted.set(False)
-            self.active_chars = self.shift_chars
-            for index, button in enumerate(self.buttons_shiftable_list):
-                button.configure(text=self.active_chars[index])
-            return
+        # with caps turned on, the shift should have no effect and without that logic, the whole lower-, uppercase
+        # letter system goes tits up
+        if not self.caps_on.get():
+            if self.shift_on.get():
+                self.shift_on.set(False)
+                self.change_upper_lowercase(lowercase=True)
+                return
 
-        self.shifted.set(True)
-        self.active_chars = self.default_chars
-        for index, button in enumerate(self.buttons_shiftable_list):
-            button.configure(text=self.active_chars[index])
+            self.change_upper_lowercase(lowercase=False)
+            self.shift_on.set(True)
 
-    def arrow_up_on_click(self):
-        print('↑')
+    def arrow_on_click(self, change_horizontal: int = 0, change_vertical: int = 0):
+        if isinstance(self.linked_widged, Entry):
+            x = self.linked_widged.index('insert')
+            self.linked_widged.icursor(f'{x + change_horizontal}')
+        elif isinstance(self.linked_widged, Textbox):
+            y, x = self.linked_widged.index('insert').split('.')
 
-    def arrow_left_on_click(self):
-        print('←')
-
-    def arrow_down_on_click(self):
-        print('↓')
-
-    def arrow_right_on_click(self):
-        print('→')
+            # this cursed line is used to move cursor on the Textbox, because icursor doesn't work on Textboxes
+            self.linked_widged.mark_set('insert', '%d.%d' % (int(y) - change_vertical, int(x) + change_horizontal))
 
     def spacebar_on_click(self):
-        print('space')
+        self.linked_widged.insert(self.linked_widged.index('insert'), ' ')
+
+    def change_upper_lowercase(self, lowercase: bool):
+        if lowercase:
+            for index, button in enumerate(self.buttons_shiftable_list):
+                button.configure(text=self.default_chars[index])
+            return
+        for index, button in enumerate(self.buttons_shiftable_list):
+            button.configure(text=self.shifted_chars[index])
 
 
 class Button(CTkButton):
@@ -354,7 +399,7 @@ class Entry(CTkEntry):
                          show=show)
 
 
-class TextBox(CTkTextbox):
+class Textbox(CTkTextbox):
     def __init__(self,
                  master: Any,
                  width: int = 200,
@@ -520,7 +565,7 @@ if __name__ == '__main__':
                                                   minsize=(500, 500)))
     entry_test = Entry(root,
                        placeholder_text='AAA')
-    textbox_text = TextBox(master=frame_test)
+    textbox_text = Textbox(master=frame_test)
 
     treeview_test = Treeview(master=root, columns=("test1", "test2", "test3"))
     treeview_test.heading("test1", text="test1")
@@ -530,11 +575,11 @@ if __name__ == '__main__':
     # label_test.pack(padx=10, pady=10)
     # button_test.pack(padx=10, pady=10)
     # entry_test.pack(padx=10, pady=10)
-    # frame_test.pack(padx=10, pady=10)
-    # textbox_text.pack(padx=10, pady=10)
+    frame_test.pack(padx=10, pady=10)
+    textbox_text.pack(padx=10, pady=10)
     # treeview_test.pack(padx=10, pady=10)
 
-    keyboard = KeyboardFrame(master=root, size_multiplier=1)
-    keyboard.pack()
+    keyboard_frame = KeyboardFrame(master=root, size_multiplier=1, write_on=textbox_text)
+    keyboard_frame.pack()
 
     root.mainloop()
