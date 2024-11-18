@@ -20,6 +20,10 @@ def generate_key() -> bytes:
     return secrets.token_urlsafe(36).encode()
 
 
+def validate_key() -> bool:
+    raise NotImplementedError
+
+
 def decode_key(full_key: bytes) -> tuple[bytes, bytes]:
     return full_key[:32], full_key[32:]
 

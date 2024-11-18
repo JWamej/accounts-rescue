@@ -13,6 +13,8 @@ DEFAULT_FRAME_FG = '#1c0016'
 DEFAULT_WIDGET_FG = '#4a0064'
 DEFAULT_BUTTON_FG = '#650089'
 DEFAULT_BUTTON_HOVER_FG = '#46004c'
+DEFAULT_CHECKBOX_CHECKMARK = '#001ea7'
+DEFAULT_CHECKBOX_HOVER_FG = '#00115d'
 DEFAULT_TEXTCOLOR = '#ffffff'
 DEFAULT_TEXTCOLOR_DISABLED = '#818181'
 DEFAULT_TEXTCOLOR_PLACEHOLDER = DEFAULT_TEXTCOLOR_DISABLED
@@ -256,9 +258,14 @@ class KeyboardFrame(CTkFrame):
         self.linked_widged.insert(position, character)
 
     def backspace_on_click(self):
+        # without this check one can start deleting entry's placeholder text by clicking backspace
+        if not self.linked_widged.get():
+            return
+
         if isinstance(self.linked_widged, Entry):
             x = self.linked_widged.index('insert')
             self.linked_widged.delete(int(x) - 1)
+
         elif isinstance(self.linked_widged, Textbox):
             y, x = self.linked_widged.index('insert').split('.')
             self.linked_widged.delete(f'{y}.{int(x) - 1}')
@@ -275,7 +282,6 @@ class KeyboardFrame(CTkFrame):
     # imitates the 'enter' key-press
     def enter_on_click(self):
         keyboard.press('enter')
-
 
     def toggle_shift_on_click(self):
         # with caps turned on, the shift should have no effect and without that logic, the whole lower-, uppercase
@@ -309,6 +315,9 @@ class KeyboardFrame(CTkFrame):
             return
         for index, button in enumerate(self.buttons_shiftable_list):
             button.configure(text=self.shifted_chars[index])
+
+    def change_linked_widget(self, widget: CTkEntry | CTkTextbox):
+        self.linked_widged = widget
 
 
 class Button(CTkButton):
@@ -503,6 +512,56 @@ class Treeview(TtkTreeview):
         self.tk.call("set_theme", "dark")
 
 
+class CheckBox(CTkCheckBox):
+    def __init__(self,
+                 master: Any,
+                 width: int = 100,
+                 height: int = 24,
+                 checkbox_width: int = 20,
+                 checkbox_height: int = 20,
+                 corner_radius: int | None = None,
+                 border_width: int | None = None,
+                 bg_color: str | tuple[str, str] = "transparent",
+                 fg_color: str | tuple[str, str] | None = DEFAULT_WIDGET_FG,
+                 hover_color: str | tuple[str, str] | None = DEFAULT_BUTTON_HOVER_FG,
+                 border_color: str | tuple[str, str] | None = DEFAULT_BORDER_COLOR,
+                 checkmark_color: str | tuple[str, str] | None = None,
+                 text_color: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR,
+                 text_color_disabled: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR_DISABLED,
+                 text: str = "CTkCheckBox",
+                 font: tuple | CTkFont | None = FONT_NORMAL,
+                 textvariable: Variable | None = None,
+                 state: str = 'normal',
+                 hover: bool = True,
+                 command: () = None,
+                 onvalue: int | str = 1,
+                 offvalue: int | str = 0,
+                 variable: Variable | None = None):
+        super().__init__(master=master,
+                         width=width,
+                         height=height,
+                         checkbox_width=checkbox_width,
+                         checkbox_height=checkbox_height,
+                         corner_radius=corner_radius,
+                         border_width=border_width,
+                         bg_color=bg_color,
+                         fg_color=fg_color,
+                         hover_color=hover_color,
+                         border_color=border_color,
+                         checkmark_color=checkmark_color,
+                         text_color=text_color,
+                         text_color_disabled=text_color_disabled,
+                         text=text,
+                         font=font,
+                         textvariable=textvariable,
+                         state=state,
+                         hover=hover,
+                         command=command,
+                         onvalue=onvalue,
+                         offvalue=offvalue,
+                         variable=variable)
+
+
 class CensorCheckbox(CTkCheckBox):
     def __init__(self,
                  master: Any,
@@ -565,6 +624,7 @@ if __name__ == '__main__':
                                                   minsize=(500, 500)))
     entry_test = Entry(root,
                        placeholder_text='AAA')
+    checkbox_test = CheckBox(root, text='Test')
     textbox_text = Textbox(master=frame_test)
 
     treeview_test = Treeview(master=root, columns=("test1", "test2", "test3"))
@@ -575,6 +635,7 @@ if __name__ == '__main__':
     # label_test.pack(padx=10, pady=10)
     # button_test.pack(padx=10, pady=10)
     # entry_test.pack(padx=10, pady=10)
+    checkbox_test.pack()
     frame_test.pack(padx=10, pady=10)
     textbox_text.pack(padx=10, pady=10)
     # treeview_test.pack(padx=10, pady=10)
