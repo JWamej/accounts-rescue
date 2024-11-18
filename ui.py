@@ -23,14 +23,25 @@ FONT_NORMAL = ('Arial', 12)
 FONT_BIG = ('Arial', 18)
 
 
-# DisplayWindow: classmethod
-# MainWindow: classmethod
-# InfoWindow: classmethod
-# FirstUseWindow: classmethod
+# Notes
+# 1. The keyboard is a part of MainWindow, but it is always displayed even when the actual
+#    main_frame is hidden. This is because making it an independent class would create issues
+#    where MainWindow class needs KeyboardFrame to be generated, but KeyboardFrame also needs
+#    MainWindow to be generated. I kind of made it work in main.py, but I would rather not repeat
+#    that solution too often, because it is most likely bug-inducing.
 
 
-def browse_dirs(entry: Entry):
+def browse_dirs(entry: CTkEntry):
     selected_dir = filedialog.askdirectory(title='Select directory')
+    if selected_dir:
+        entry.configure(state='normal')
+        entry.delete(0, END)
+        entry.insert(0, selected_dir)
+        entry.configure(state='disabled')
+
+
+def browse_files(entry: CTkEntry):
+    selected_dir = filedialog.askopenfilename(title='Select file')
     if selected_dir:
         entry.configure(state='normal')
         entry.delete(0, END)
@@ -60,7 +71,7 @@ def set_binds_buttons(button: CTkButton, command: () = None):
 
 class MainWindow:
     def __init__(self, master: CTk, info_window: "InfoWindow", display_window: "DisplayWindow",
-                 first_use_window: "FirstUseWindow", ):
+                 first_use_window: "FirstUseWindow"):
         self.root = master
 
         self.info_window_obj = info_window
@@ -68,7 +79,7 @@ class MainWindow:
         self.first_use_obj = first_use_window
 
         # This might cause issues when switching between windows, but if this bind is applied to the frame, it at first
-        # sets focus on the entry, and after second input calls right method
+        # sets focus on the entry, and after second input calls the right method
         self.root.bind('<Tab>', lambda event: set_focus_by_index(self.tab_focus_index, self.widget_dict))
         self.root.bind('<Escape>', lambda event: sys.exit())
 
@@ -81,12 +92,22 @@ class MainWindow:
         hide_character = StringVar(value='*')
         self.key_entry = Entry(master=self.main_frame,
                                placeholder_text='Enter key',
-                               width=350,
+                               width=325,
                                show=hide_character.get())
-        self.key_entry.bind('<Return>', self.display_init)
-        self.key_entry.bind('<FocusIn>', lambda event: self.keyboard_current_focus.set(1))
+        self.key_entry.bind('<FocusIn>', lambda event: self.keyboard_frame.change_linked_widget(self.key_entry))
 
         self.show_key_checkbox = CensorCheckbox(master=self.main_frame, entry=self.key_entry, str_var=hide_character)
+
+        self.file_entry = Entry(master=self.main_frame,
+                                placeholder_text='Select source file',
+                                width=325)
+        self.file_entry.bind('<FocusIn>', lambda event: (self.keyboard_frame.change_linked_widget(self.file_entry)))
+
+        self.browse_files_button = Button(master=self.main_frame,
+                                          text='Browse',
+                                          width=90,
+                                          command=lambda: browse_files(entry=self.file_entry))
+        set_binds_buttons(button=self.browse_files_button, command=lambda: browse_files(entry=self.file_entry))
 
         self.info_button = Button(master=self.main_frame,
                                   text='?',
@@ -106,22 +127,25 @@ class MainWindow:
         set_binds_buttons(button=self.confirm_button, command=self.display_init)
 
         self.widget_dict = {1: self.key_entry,
-                            2: self.confirm_button,
-                            3: self.first_use_button,
-                            4: self.info_button}
+                            2: self.file_entry,
+                            3: self.browse_files_button,
+                            4: self.confirm_button,
+                            5: self.first_use_button,
+                            6: self.info_button}
 
-        self.keyboard_current_focus = IntVar(value=1)  # integer related to the right widget in self.widget_dict
         self.tab_focus_index = IntVar(value=1)
 
         self.keyboard_frame = KeyboardFrame(master=self.root,
-                                            write_on=self.widget_dict[self.keyboard_current_focus.get()])
+                                            write_on=self.key_entry)
 
-        self.title_label.grid(row=0, column=0, columnspan=3, padx=5, pady=(5, 0))
-        self.key_entry.grid(row=1, column=0, columnspan=2, padx=5, pady=(5, 0))
-        self.show_key_checkbox.grid(row=1, column=2, padx=5, pady=(5, 0))
-        self.info_button.grid(row=0, column=0, sticky='nw', padx=5, pady=(5, 0))
-        self.first_use_button.grid(row=2, column=0, columnspan=3, padx=5, pady=(5, 5), sticky='w')
-        self.confirm_button.grid(row=2, column=0, columnspan=3, padx=5, pady=(5, 5), sticky='e')
+        self.title_label.grid(row=0, column=0, columnspan=2, padx=5, pady=(10, 10))
+        self.key_entry.grid(row=1, column=0, padx=(10, 5), pady=(5, 0))
+        self.show_key_checkbox.grid(row=1, column=1, padx=5, pady=(5, 0), sticky='w')
+        self.file_entry.grid(row=2, column=0, padx=(10, 5), pady=(5, 0))
+        self.browse_files_button.grid(row=2, column=1, padx=(5, 10), pady=(5, 0), sticky='w')
+        self.info_button.grid(row=0, column=0, sticky='nw', padx=(10, 5), pady=(10, 0))
+        self.first_use_button.grid(row=3, column=0, columnspan=3, padx=(10, 5), pady=(10, 10), sticky='w')
+        self.confirm_button.grid(row=3, column=0, columnspan=3, padx=(5, 10), pady=(10, 10), sticky='e')
         self.main_frame.place(relx=0.5, rely=0.5, anchor='center')
         self.keyboard_frame.place(relx=0.5, rely=0.99, anchor='s')
 
@@ -131,13 +155,15 @@ class MainWindow:
     def first_use_init(self, *args):
         self.first_use_obj.first_use_frame.lift()
         self.main_frame.lower()
-        self.keyboard_frame.change_linked_widget(self.first_use_obj.widget_dict[self.first_use_obj.keyboard_current_focus.get()])
-        self.root.bind('<Tab>', lambda event: set_focus_by_index(self.first_use_obj.tab_focus_index, self.first_use_obj.widget_dict))
+        self.keyboard_frame.change_linked_widget(
+            self.first_use_obj.widget_dict[self.first_use_obj.keyboard_current_focus.get()])
+        self.root.bind('<Tab>', lambda event: set_focus_by_index(self.first_use_obj.tab_focus_index,
+                                                                 self.first_use_obj.widget_dict))
 
     def display_init(self, *args):
         raise NotImplementedError
 
-    # look main.py for explaination
+    # look main.py for explanation
     def update_objects(self, new_first_use_obj: "FirstUseWindow", new_info_window_obj: "InfoWindow",
                        new_display_window_obj: "DisplayWindow"):
         self.first_use_obj = new_first_use_obj
@@ -172,7 +198,8 @@ class FirstUseWindow:
                                width=325,
                                show=hide_character.get())
         self.key_entry.insert(0, generate_key())
-        self.key_entry.bind('<FocusIn>', lambda event: self.keyboard_current_focus.set(1))
+        self.key_entry.bind('<FocusIn>',
+                            lambda event: self.main_window_obj.keyboard_frame.change_linked_widget(self.key_entry))
 
         self.show_key_checkbox = CensorCheckbox(master=self.first_use_frame,
                                                 entry=self.key_entry,
@@ -180,20 +207,19 @@ class FirstUseWindow:
 
         self.copy_key_button = Button(master=self.first_use_frame,
                                       text='Copy',
-                                      width=66,
+                                      width=70,
                                       command=lambda: pyperclip.copy(self.key_entry.get()))
         set_binds_buttons(button=self.copy_key_button, command=lambda: pyperclip.copy(self.key_entry.get()))
 
         self.directory_entry = Entry(master=self.first_use_frame,
                                      placeholder_text='Select directory',
-                                     width=325,
-                                     state='normal')
-        self.directory_entry.configure(state='disabled')
-        self.directory_entry.bind('<Button-1>', lambda event: browse_dirs(entry=self.directory_entry))
+                                     width=325)
+        self.directory_entry.bind('<FocusIn>', lambda event: self.main_window_obj.keyboard_frame.change_linked_widget(
+                                                            self.directory_entry))
 
         self.browse_dirs_button = Button(master=self.first_use_frame,
                                          text='Browse',
-                                         width=66,
+                                         width=70,
                                          command=lambda: browse_dirs(entry=self.directory_entry))
         set_binds_buttons(button=self.browse_dirs_button, command=lambda: browse_dirs(entry=self.directory_entry))
 
@@ -208,22 +234,23 @@ class FirstUseWindow:
         set_binds_buttons(button=self.confirm_button, command=self.confirm)
 
         self.widget_dict = {1: self.key_entry,
-                            2: self.copy_key_button,
-                            3: self.browse_dirs_button,
-                            4: self.confirm_button,
-                            5: self.exit_button}
+                            2: self.directory_entry,
+                            3: self.copy_key_button,
+                            4: self.browse_dirs_button,
+                            5: self.confirm_button,
+                            6: self.exit_button}
 
         self.tab_focus_index = IntVar(value=1)
         self.keyboard_current_focus = IntVar(value=1)
 
-        self.title_label.grid(row=0, column=0, columnspan=3, pady=(5, 1), padx=5)
-        self.key_entry.grid(row=1, column=0, pady=1, padx=5)
-        self.copy_key_button.grid(row=1, column=1, pady=1, padx=5)
-        self.show_key_checkbox.grid(row=1, column=2, pady=1, padx=5)
-        self.directory_entry.grid(row=2, column=0, pady=1, padx=5)
-        self.browse_dirs_button.grid(row=2, column=1, pady=1, padx=5)
-        self.confirm_button.grid(row=3, column=0, columnspan=3, sticky='e', pady=(10, 5), padx=5)
-        self.exit_button.grid(row=3, column=0, columnspan=3, sticky='w', pady=(10, 5), padx=5)
+        self.title_label.grid(row=0, column=0, columnspan=3, pady=(10, 5), padx=5)
+        self.key_entry.grid(row=1, column=0, pady=(5, 0), padx=(10, 5))
+        self.copy_key_button.grid(row=1, column=1, pady=(5, 0), padx=5)
+        self.show_key_checkbox.grid(row=1, column=2, pady=(5, 0), padx=5)
+        self.directory_entry.grid(row=2, column=0, pady=(5, 0), padx=(10, 5))
+        self.browse_dirs_button.grid(row=2, column=1, pady=(5, 0), padx=5)
+        self.confirm_button.grid(row=3, column=0, columnspan=3, sticky='e', pady=(10, 10), padx=(10, 10))
+        self.exit_button.grid(row=3, column=0, columnspan=3, sticky='w', pady=(10, 10), padx=(10, 5))
         self.first_use_frame.place(relx=0.5, rely=0.5, anchor='center')
         self.first_use_frame.lower()
 
@@ -282,7 +309,7 @@ class FirstUseWindow:
     def exit(self):
         self.main_window_obj.main_frame.lift()
         self.first_use_frame.lower()
-        self.main_window_obj.keyboard_frame.change_linked_widget(self.main_window_obj.widget_dict[self.main_window_obj.keyboard_current_focus.get()])
+        self.main_window_obj.keyboard_frame.change_linked_widget(self.main_window_obj.key_entry)
         self.root.bind('<Tab>', lambda event: set_focus_by_index(self.main_window_obj.tab_focus_index,
                                                                  self.main_window_obj.widget_dict))
 

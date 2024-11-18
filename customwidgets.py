@@ -73,6 +73,9 @@ class Frame(CTkFrame):
                          overwrite_preferred_drawing_method=overwrite_preferred_drawing_method)
 
 
+# Notes
+# 1. It is a rather bad idea to touch anything here, especially the padx-es.
+#    Even a small wrong move creates those infuriating 1-pixel differences that are hard to deal with.
 class KeyboardFrame(CTkFrame):
     def __init__(self,
                  master: Any,
@@ -107,45 +110,18 @@ class KeyboardFrame(CTkFrame):
                               'y', 'u', 'i', 'o', 'p', '[', ']', '\\', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', '/',
                               ';', "'", 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.']
         self.shifted_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '~', 'Q', 'W', 'E', 'R', 'T',
-                            'Y', 'U', 'I', 'O', 'P', '{', '}', '|', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '?',
-                            ':', '"', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>']
+                              'Y', 'U', 'I', 'O', 'P', '{', '}', '|', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '?',
+                              ':', '"', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>']
         self.buttons_shiftable_list = []
         self.buttons_draw()
 
     def buttons_draw(self):
         grid_place = [0, 0]
         column_max = 30
-        size = int(30 * self.size_multiplier)  # Keep in mind that float-input makes the layout really irregular
+        size = int(40 * self.size_multiplier)  # Keep in mind that float-input makes the layout really irregular
 
         # Loop that grids all buttons except: spacebar, capslock, shift, backspace, arrows
         for index in range(47):
-            button = Button(master=self,
-                            text=self.default_chars[index],
-                            width=int(size),
-                            font=self.font)
-            button.configure(hover_color=DEFAULT_BUTTON_FG,
-                             command=lambda t=self.default_chars[index]: self.normal_on_click(character=t))
-            self.buttons_shiftable_list.append(button)
-
-            # looks weird, but works
-            if grid_place == [0, 0] or grid_place == [0, 1]:
-                padx = (5, 1)
-            elif grid_place == [1, 2]:
-                padx = (3, 1)
-            elif grid_place == [28, 0] or grid_place == [28, 1] or grid_place == [28, 2] or grid_place == [28, 3]:
-                padx = (1, 5)
-            else:
-                padx = 1
-
-            if grid_place[1] == 0:
-                pady = (5, 1)
-            else:
-                pady = 1
-
-            button.grid(row=grid_place[1], column=grid_place[0], columnspan=2, padx=padx, pady=pady)
-
-            grid_place[0] += 2
-
             # moves the buttons to a new row when needed
             if grid_place[0] >= column_max:
                 if grid_place[1] == 0:
@@ -170,6 +146,37 @@ class KeyboardFrame(CTkFrame):
 
             elif grid_place == [26, 3]:
                 grid_place = [28, 3]
+
+            # looks weird, but works
+            # sets right padx
+            if grid_place == [0, 0] or grid_place == [0, 1]:
+                padx = (5, 1)
+            elif grid_place == [1, 2]:
+                padx = (3, 1)
+            elif grid_place == [28, 0] or grid_place == [28, 1] or grid_place == [28, 2] or grid_place == [28, 3]:
+                padx = (1, 5)
+            else:
+                padx = 1
+
+            # sets right pady
+            if grid_place[1] == 0:
+                pady = (5, 1)
+            else:
+                pady = 1
+
+            # generates button
+            button = Button(master=self,
+                            text=self.default_chars[index],
+                            width=int(size),
+                            font=self.font)
+            button.configure(hover_color=DEFAULT_BUTTON_FG,
+                             command=lambda t=self.default_chars[index]: self.normal_on_click(character=t))
+            self.buttons_shiftable_list.append(button)
+
+            # places button on the frame
+            button.grid(row=grid_place[1], column=grid_place[0], columnspan=2, padx=padx, pady=pady)
+
+            grid_place[0] += 2
 
         backspace = Button(master=self,
                            text='<==',
@@ -237,7 +244,7 @@ class KeyboardFrame(CTkFrame):
         backspace.grid(row=0, column=20, columnspan=4, padx=1, pady=(5, 1))
         capslock.grid(row=1, column=20, columnspan=4, padx=1, pady=1)
         enter.grid(row=2, column=19, columnspan=5, padx=1, pady=1)
-        shift.grid(row=3, column=17, columnspan=7, padx=1, pady=1)
+        shift.grid(row=3, column=17, columnspan=7, padx=(1, 0), pady=1)
         spacebar.grid(row=4, column=5, columnspan=10, pady=(1, 5))
         arrow_up.grid(row=3, column=26, padx=1, pady=1)
         arrow_left.grid(row=4, column=24, padx=1, pady=(1, 5))
