@@ -1,12 +1,10 @@
-from typing import Any, Literal
-from customtkinter import (CTk, CTkToplevel, CTkFrame, CTkLabel, CTkEntry, CTkButton, CTkTextbox, END, WORD, CTkFont,
-                           Variable, CTkImage, StringVar, CTkCheckBox, BooleanVar)
+from tkinter import Misc
 from tkinter.ttk import Treeview as TtkTreeview
-from tkinter import filedialog, messagebox, Misc
-import os
-import sys
-import keyboard
+from typing import Any, Literal
 
+import keyboard
+from customtkinter import (CTk, CTkToplevel, CTkFrame, CTkLabel, CTkEntry, CTkButton, CTkTextbox, WORD, CTkFont,
+                           Variable, CTkImage, StringVar, CTkCheckBox, BooleanVar)
 
 DEFAULT_ROOT_FG = 'black'
 DEFAULT_FRAME_FG = '#1c0016'
@@ -36,7 +34,7 @@ class Window(CTk):
         self.title(title)
 
 
-class TopLevel(CTkToplevel):
+class Toplevel(CTkToplevel):
     def __init__(self,
                  master: Any = None,
                  fg_color: str = DEFAULT_ROOT_FG,
@@ -60,7 +58,6 @@ class Frame(CTkFrame):
                  border_color: str | tuple[str, str] | None = DEFAULT_BORDER_COLOR,
                  background_corner_colors: tuple[str | tuple[str, str]] | None = None,
                  overwrite_preferred_drawing_method: str | None = None):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -79,7 +76,7 @@ class Frame(CTkFrame):
 class KeyboardFrame(CTkFrame):
     def __init__(self,
                  master: Any,
-                 write_on: CTkEntry | CTkTextbox,
+                 write_on: CTkEntry | CTkTextbox | CTk | CTkFrame | CTkToplevel,
                  width: int = 200,
                  height: int = 200,
                  size_multiplier: float = 1,
@@ -252,6 +249,9 @@ class KeyboardFrame(CTkFrame):
         arrow_right.grid(row=4, column=28, padx=(1, 5), pady=(1, 5))
 
     def normal_on_click(self, character: str, *args):
+        if isinstance(self.linked_widged, CTk):
+            return
+
         position = self.linked_widged.index('insert')
 
         # ?There is a glitch that if the shift is pressed on the normal keyboard, it starts to work only after 2nd input
@@ -265,6 +265,9 @@ class KeyboardFrame(CTkFrame):
         self.linked_widged.insert(position, character)
 
     def backspace_on_click(self):
+        if isinstance(self.linked_widged, CTk):
+            return
+
         # without this check one can start deleting entry's placeholder text by clicking backspace
         if not self.linked_widged.get():
             return
@@ -292,7 +295,7 @@ class KeyboardFrame(CTkFrame):
 
     def toggle_shift_on_click(self):
         # with caps turned on, the shift should have no effect and without that logic, the whole lower-, uppercase
-        # letter system goes tits up
+        # letter system goes insane
         if not self.caps_on.get():
             if self.shift_on.get():
                 self.shift_on.set(False)
@@ -303,9 +306,13 @@ class KeyboardFrame(CTkFrame):
             self.shift_on.set(True)
 
     def arrow_on_click(self, change_horizontal: int = 0, change_vertical: int = 0):
+        if isinstance(self.linked_widged, CTk):
+            return
+
         if isinstance(self.linked_widged, Entry):
             x = self.linked_widged.index('insert')
             self.linked_widged.icursor(f'{x + change_horizontal}')
+
         elif isinstance(self.linked_widged, Textbox):
             y, x = self.linked_widged.index('insert').split('.')
 
@@ -313,6 +320,9 @@ class KeyboardFrame(CTkFrame):
             self.linked_widged.mark_set('insert', '%d.%d' % (int(y) - change_vertical, int(x) + change_horizontal))
 
     def spacebar_on_click(self):
+        if isinstance(self.linked_widged, CTk):
+            return
+
         self.linked_widged.insert(self.linked_widged.index('insert'), ' ')
 
     def change_upper_lowercase(self, lowercase: bool):
@@ -323,7 +333,13 @@ class KeyboardFrame(CTkFrame):
         for index, button in enumerate(self.buttons_shiftable_list):
             button.configure(text=self.shifted_chars[index])
 
-    def change_linked_widget(self, widget: CTkEntry | CTkTextbox):
+    def change_linked_widget(self, widget: CTkEntry | CTkTextbox | CTk):
+        """
+        Changes widget linked to the keyboard.\n
+        If widget is of type CTk, CTkFrame or CTkToplevel, the keyboard is considered unbound
+        :param widget:
+        :return:
+        """
         self.linked_widged = widget
 
 
@@ -353,7 +369,6 @@ class Button(CTkButton):
                  command: () = None,
                  compound: str = "left",
                  anchor: str = "center"):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -397,7 +412,6 @@ class Entry(CTkEntry):
                  font: tuple | CTkFont | None = FONT_NORMAL,
                  state: str = 'normal',
                  show: str | int = None):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -432,7 +446,6 @@ class Textbox(CTkTextbox):
                  font: tuple | CTkFont | None = FONT_NORMAL,
                  activate_scrollbars: bool = True,
                  wrap=WORD):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -461,12 +474,11 @@ class Label(CTkLabel):
                  text_color: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR,
                  text_color_disabled: str | tuple[str, str] | None = DEFAULT_TEXTCOLOR_DISABLED,
                  text: str = "Label",
-                 font: tuple | CTkFont | None = FONT_NORMAL,
+                 font: tuple | CTkFont | None = FONT_BIG,
                  image: CTkImage | None = None,
                  compound: str = "center",
                  anchor: str = "center",
                  wraplength: int = 0):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -499,7 +511,6 @@ class Treeview(TtkTreeview):
                  takefocus: Any = None,
                  xscrollcommand: Any = None,
                  yscrollcommand: Any = None):
-
         super().__init__(master=master,
                          class_=class_,
                          columns=columns,
@@ -594,7 +605,6 @@ class CensorCheckbox(CTkCheckBox):
                  hover: bool = True,
                  onvalue: int | str = '',
                  offvalue: int | str = '*'):
-
         super().__init__(master=master,
                          width=width,
                          height=height,
@@ -626,7 +636,7 @@ if __name__ == '__main__':
 
     label_test = Label(root, text='AAA')
     button_test = Button(root, text='Toplevel',
-                         command=lambda: TopLevel(master=root,
+                         command=lambda: Toplevel(master=root,
                                                   geometry='500x500',
                                                   minsize=(500, 500)))
     entry_test = Entry(root,
@@ -634,10 +644,14 @@ if __name__ == '__main__':
     checkbox_test = CheckBox(root, text='Test')
     textbox_text = Textbox(master=frame_test)
 
-    treeview_test = Treeview(master=root, columns=("test1", "test2", "test3"))
+    treeview_test = Treeview(master=root, columns=("test1", "test2", "test3"), show='headings')
     treeview_test.heading("test1", text="test1")
     treeview_test.heading("test2", text="test2")
     treeview_test.heading("test3", text="test3")
+    parent = treeview_test.insert("", "end", values=('TEST', '', ''))
+    child = treeview_test.insert(parent, "end", text="Child", values=("Child Value 1", "Child Value 2"))
+    parent2 = treeview_test.insert("", "end", values=('TEST2', '', ''))
+    child2 = treeview_test.insert(parent2, "end", text="Child", values=("Child Value 3", "Child Value 4"))
 
     # label_test.pack(padx=10, pady=10)
     # button_test.pack(padx=10, pady=10)
@@ -645,7 +659,7 @@ if __name__ == '__main__':
     checkbox_test.pack()
     frame_test.pack(padx=10, pady=10)
     textbox_text.pack(padx=10, pady=10)
-    # treeview_test.pack(padx=10, pady=10)
+    treeview_test.pack(padx=10, pady=10)
 
     keyboard_frame = KeyboardFrame(master=root, size_multiplier=1, write_on=textbox_text)
     keyboard_frame.pack()

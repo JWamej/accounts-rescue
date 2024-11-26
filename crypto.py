@@ -1,7 +1,8 @@
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import secrets
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
-import secrets
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
 class CipherError(Exception):
@@ -20,12 +21,30 @@ def generate_key() -> bytes:
     return secrets.token_urlsafe(36).encode()
 
 
-def validate_key() -> bool:
-    raise NotImplementedError
+def validate_key(src_file_path: str, key: bytes) -> bool:
+    with open(src_file_path, 'rb') as file:
+        data_file = file.read()
+    verificator, accounts = data_file.split(b'<0>')
+
+    try:
+        decrypt_bytes(verificator, key)
+        return True
+    except CipherError or ValueError:
+        return False
 
 
 def decode_key(full_key: bytes) -> tuple[bytes, bytes]:
     return full_key[:32], full_key[32:]
+
+
+def pad_key(key: bytes) -> bytes:
+    if not len(key) == 48:
+        if len(key) < 48:
+            user_key = f'{key:a<48}'
+        else:
+            user_key = key[:48]
+
+    return key
 
 
 def encrypt_str(plain_text: str, encryption_key: bytes) -> bytes:
@@ -79,7 +98,7 @@ def decrypt_bytes(cipher_text: bytes, full_decryption_key: bytes) -> str:
 if __name__ == '__main__':
     KEY = generate_key()
     print(KEY)
-    text = 'Mofat'
+    text = 'Beautiful is better than ugly.'
     text_en = encrypt_str(text, KEY)
     print(text)
     print(text_en)
